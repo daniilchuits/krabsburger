@@ -10,14 +10,14 @@ type Result struct {
 	Fac int
 }
 
-func writer(jobs chan int) {
+func producer(jobs chan int) {
 	for i := 1; i < 11; i++ {
 		jobs <- i
 	}
 	close(jobs)
 }
 
-func factorial(jobs chan int, result chan Result, wg *sync.WaitGroup) {
+func consumer(jobs chan int, result chan Result, wg *sync.WaitGroup) {
 	defer wg.Done()
 	for n := range jobs {
 		res := 1
@@ -38,10 +38,10 @@ func main() {
 	numWorkers := 3
 	wg.Add(numWorkers)
 	for i := 0; i < numWorkers; i++ {
-		go factorial(jobs, results, &wg)
+		go consumer(jobs, results, &wg)
 	}
 
-	go writer(jobs)
+	go producer(jobs)
 
 	go func() {
 		wg.Wait()
